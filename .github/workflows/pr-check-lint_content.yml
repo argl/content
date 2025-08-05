@@ -38,7 +38,7 @@ jobs:
             --jq '.files | .[] | select(.status|IN("added", "modified", "renamed", "copied", "changed")) | .filename')
           # use `printf '%q '…` to properly escape filenames with special characters or spaces in them
           DIFF_DOCUMENTS=$(echo "${DIFF_DOCUMENTS}" | egrep -i "^files/.*\.md$" | while IFS= read -r file; do printf '%q ' "$file"; done)
-          echo "DIFF_DOCUMENTS="${DIFF_DOCUMENTS}" >> "$GITHUB_OUTPUT"
+          echo "DIFF_DOCUMENTS=${DIFF_DOCUMENTS} >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
 
       - name: Checkout HEAD
