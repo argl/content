@@ -100,19 +100,13 @@ jobs:
           # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
           EOF="$(openssl rand -hex 8)"
 
-          set -x
-          # The DIFF_DOCUMENTS env var now contains the clean newline-separated list
-          echo "Files to process:"
-          echo "$DIFF_DOCUMENTS"
-          
+          # The DIFF_DOCUMENTS env var contains the clean newline-separated list
           # Read into array, one filename per line
           readarray -t files_to_lint <<< "$DIFF_DOCUMENTS"
                    
           # Debug: show what we got
-          printf "Array contents (%d files):\n" "${#files_to_lint[@]}"
+          printf "Files to process (%d files):\n" "${#files_to_lint[@]}"
           printf "'%s'\n" "${files_to_lint[@]}"
-
-          git ls-files --eol "${files_to_lint[@]}"
 
           echo "crlf line ending check"
           CRLF_FAILED=true
