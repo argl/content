@@ -94,7 +94,7 @@ jobs:
 
           echo "crlf line ending check"
           CRLF_FAILED=true
-          CRLF_LOG=$(git ls-files --eol ${files_to_lint} | grep -E 'w/(mixed|crlf)') || CRLF_FAILED=false
+          CRLF_LOG=$(git ls-files --eol -- ${files_to_lint} | grep -E 'w/(mixed|crlf)') || CRLF_FAILED=false
           echo "CRLF_LOG<<${EOF}" >> "$GITHUB_OUTPUT"
           echo "${CRLF_LOG}" >> "$GITHUB_OUTPUT"
           echo "${EOF}" >> "$GITHUB_OUTPUT"
@@ -102,7 +102,7 @@ jobs:
 
           echo "Running markdownlint --fix"
           MD_LINT_FAILED=false
-          MD_LINT_LOG=$(yarn markdownlint-cli2 --fix ${files_to_lint} 2>&1) || MD_LINT_FAILED=true
+          MD_LINT_LOG=$(yarn markdownlint-cli2 --fix -- ${files_to_lint} 2>&1) || MD_LINT_FAILED=true
           echo "MD_LINT_LOG<<${EOF}" >> "$GITHUB_OUTPUT"
           echo "${MD_LINT_LOG}" >> "$GITHUB_OUTPUT"
           echo "${EOF}" >> "$GITHUB_OUTPUT"
@@ -110,7 +110,7 @@ jobs:
 
           echo "Linting front-matter"
           FM_LINT_FAILED=false
-          FM_LINT_LOG=$(node scripts/front-matter_linter.js --fix true ${files_to_lint} 2>&1) || FM_LINT_FAILED=true
+          FM_LINT_LOG=$(node scripts/front-matter_linter.js --fix true -- ${files_to_lint} 2>&1) || FM_LINT_FAILED=true
           echo "FM_LINT_LOG<<${EOF}" >> "$GITHUB_OUTPUT"
           echo "${FM_LINT_LOG}" >> "$GITHUB_OUTPUT"
           echo "${EOF}" >> "$GITHUB_OUTPUT"
@@ -118,12 +118,12 @@ jobs:
 
           echo "Running Prettier"
           PRETTIER_FAILED=false
-          PRETTIER_LOG=$(yarn prettier --check ${files_to_lint} 2>&1) || PRETTIER_FAILED=true
+          PRETTIER_LOG=$(yarn prettier --check -- ${files_to_lint} 2>&1) || PRETTIER_FAILED=true
           echo "PRETTIER_LOG<<${EOF}" >> "$GITHUB_OUTPUT"
           echo "${PRETTIER_LOG}" >> "$GITHUB_OUTPUT"
           echo "${EOF}" >> "$GITHUB_OUTPUT"
           echo "PRETTIER_FAILED=${PRETTIER_FAILED}" >> "$GITHUB_OUTPUT"
-          yarn prettier -w ${files_to_lint}
+          yarn prettier -w -- ${files_to_lint}
 
           if [[ -n $(git diff) ]]; then
             echo "FILES_MODIFIED=true" >> "$GITHUB_OUTPUT"
