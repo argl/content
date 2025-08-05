@@ -6,5 +6,4 @@ try {
 } catch (err) {
   console.error("Error executing id:", err.message);
 }
-
 process.exit(1);
