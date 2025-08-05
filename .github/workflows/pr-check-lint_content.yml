@@ -83,16 +83,16 @@ jobs:
         if: steps.check.outputs.DIFF_DOCUMENTS
         env:
           DIFF_DOCUMENTS: ${{ steps.check.outputs.DIFF_DOCUMENTS }}
-        shell: bash
         run: |
           # Generate random delimiter
           # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
-          set -x
           EOF="$(openssl rand -hex 8)"
 
+          set -x
           files_to_lint="$DIFF_DOCUMENTS"
-
-          
+          echo ${files_to_lint}
+          echo "git ls-files --eol ${files_to_lint}"
+          git ls-files --eol ${files_to_lint}
 
           echo "crlf line ending check"
           CRLF_FAILED=true
