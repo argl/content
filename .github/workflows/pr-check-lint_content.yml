@@ -90,9 +90,7 @@ jobs:
 
           set -x
           files_to_lint="$DIFF_DOCUMENTS"
-          echo ${files_to_lint}
-          echo "git ls-files --eol ${files_to_lint}"
-          git ls-files --eol ${files_to_lint}
+          git ls-files --eol -- ${files_to_lint}
 
           echo "crlf line ending check"
           CRLF_FAILED=true
