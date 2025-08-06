@@ -148,7 +148,10 @@ jobs:
               ARGS+=("-f" "$PWD/$file")
           done
 
-          yarn rari build --no-basic --json-issues --data-issues $ARGS
+          echo ARGS:
+          echo $ARGS
+          
+          yarn rari build --no-basic --json-issues --data-issues $ARGS[@]
           yarn yari-render-html
 
           echo "Disk usage size of the build"
