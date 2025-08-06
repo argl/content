@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   tests:
-    if: github.repository == 'mdn/content'
+    if: github.repository == 'argl/content'
     runs-on: ubuntu-latest
     env:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
