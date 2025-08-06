@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   tests:
-    if: github.repository == 'argl/content'
+    if: github.repository == 'mdn/content'
     runs-on: ubuntu-latest
     env:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -35,52 +35,45 @@ jobs:
         id: check
         run: |
           # Use the GitHub API to get the list of changed files
-          # documentation: https://docs.github.com/rest/commits/commits#compare-two-commits
-
-          # Get files as newline-separated list
           DIFF_DOCUMENTS=$(gh api repos/{owner}/{repo}/compare/${BASE_SHA}...${HEAD_SHA} \
             --jq '.files | .[] | select(.status|IN("added", "modified", "renamed", "copied", "changed")) | .filename')
 
-          FILTERED_MD_FILES=$(echo "$DIFF_DOCUMENTS" | egrep -i "^files/.*\.md$")
-          # Store as multiline output
-          EOF="$(openssl rand -hex 8)"
-          echo "GIT_DIFF_CONTENT<<${EOF}" >> "$GITHUB_OUTPUT"
-          echo "${FILTERED_MD_FILES}" >> "$GITHUB_OUTPUT"
-          echo "${EOF}" >> "$GITHUB_OUTPUT"
+          FILTERED_MD_FILES=$(echo "$DIFF_DOCUMENTS" | egrep -i "^files/.*\.md$" || true)
+          FILTERED_IMAGE_FILES=$(echo "$DIFF_DOCUMENTS" | egrep -i "^files/.*\.(png|jpeg|jpg|gif|svg|webp)$" || true)
 
-          FILTERED_IMAGE_FILES=$(echo "$DIFF_DOCUMENTS" | egrep -i "^files/.*\.(png|jpeg|jpg|gif|svg|webp)$")
-          # Store as multiline output
-          EOF="$(openssl rand -hex 8)"
-          echo "GIT_DIFF_FILES<<${EOF}" >> "$GITHUB_OUTPUT"
-          echo "${FILTERED_IMAGE_FILES}" >> "$GITHUB_OUTPUT"
-          echo "${EOF}" >> "$GITHUB_OUTPUT"
+          HAS_MD_FILES=false
+          HAS_IMAGE_FILES=false
 
-          # DIFF_DOCUMENTS=$(gh api repos/{owner}/{repo}/compare/${BASE_SHA}...${HEAD_SHA} \
-          #   --jq '.files | .[] | select(.status|IN("added", "modified", "renamed", "copied", "changed")) | .filename')
+          # Check if we actually have content (not just empty strings)
+          if [ -n "${FILTERED_MD_FILES// /}" ]; then  # Remove all spaces and check if anything remains
+            HAS_MD_FILES=true
+            EOF_MD="$(openssl rand -hex 8)"
+            echo "GIT_DIFF_CONTENT<<${EOF_MD}" >> "$GITHUB_OUTPUT"
+            echo "${FILTERED_MD_FILES}" >> "$GITHUB_OUTPUT"
+            echo "${EOF_MD}" >> "$GITHUB_OUTPUT"
+          else
+            echo "GIT_DIFF_CONTENT=" >> "$GITHUB_OUTPUT"
+          fi
 
-          # # filter out files that are not markdown files
-          # GIT_DIFF_CONTENT=$(echo "${DIFF_DOCUMENTS}" | egrep -i "^files/.*\.(md)$" | xargs)
-          # echo "GIT_DIFF_CONTENT=${GIT_DIFF_CONTENT}" >> "$GITHUB_OUTPUT"
+          if [ -n "${FILTERED_IMAGE_FILES// /}" ]; then  # Remove all spaces and check if anything remains
+            HAS_IMAGE_FILES=true
+            EOF_IMG="$(openssl rand -hex 8)"
+            echo "GIT_DIFF_FILES<<${EOF_IMG}" >> "$GITHUB_OUTPUT"
+            echo "${FILTERED_IMAGE_FILES}" >> "$GITHUB_OUTPUT"
+            echo "${EOF_IMG}" >> "$GITHUB_OUTPUT"
+          else
+            echo "GIT_DIFF_FILES=" >> "$GITHUB_OUTPUT"
+          fi
 
-          # # filter out files that are not attachments
-          # GIT_DIFF_FILES=$(echo "${DIFF_DOCUMENTS}" | egrep -i "^files/.*\.(png|jpeg|jpg|gif|svg|webp)$" | xargs)
-          # echo "GIT_DIFF_FILES=${GIT_DIFF_FILES}" >> "$GITHUB_OUTPUT"
+          # Set the boolean outputs
+          echo "HAS_MD_FILES=${HAS_MD_FILES}" >> "$GITHUB_OUTPUT"
+          echo "HAS_IMAGE_FILES=${HAS_IMAGE_FILES}" >> "$GITHUB_OUTPUT"
 
-          # Also set a simple flag for whether we have files
-          if [ -n "${FILTERED_MD_FILES}" ] || [ -n "${FILTERED_IMAGE_FILES}" ]; then
+          # Set overall flag
+          if [ "${HAS_MD_FILES}" = "true" ] || [ "${HAS_IMAGE_FILES}" = "true" ]; then
             echo "HAS_FILES=true" >> "$GITHUB_OUTPUT"
           else
             echo "HAS_FILES=false" >> "$GITHUB_OUTPUT"
-          fi
-          if [ -n "${FILTERED_MD_FILES}" ]; then
-            echo "HAS_MD_FILES=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "HAS_MD_FILES=false" >> "$GITHUB_OUTPUT"
-          fi
-          if [ -n "${FILTERED_IMAGE_FILES}" ]; then
-            echo "HAS_IMAGE_FILES=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "HAS_IMAGE_FILES=false" >> "$GITHUB_OUTPUT"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
