@@ -141,17 +141,20 @@ jobs:
 
           set -x
 
+          # Read into array, one filename per line
+          readarray -t files_to_build <<< "$GIT_DIFF_CONTENT"
+
           # ARGS=$(echo $GIT_DIFF_CONTENT | sed -E -e "s#(^| )files#\1-f $PWD/files#g")
 
           ARGS=()
-          for file in "${GIT_DIFF_CONTENT[@]}"; do
+          for file in "${files_to_build[@]}"; do
               ARGS+=("-f" "$PWD/$file")
           done
 
           echo ARGS:
           echo $ARGS
-          
-          yarn rari build --no-basic --json-issues --data-issues $ARGS[@]
+
+          yarn rari build --no-basic --json-issues --data-issues $ARGS
           yarn yari-render-html
 
           echo "Disk usage size of the build"
@@ -185,7 +188,7 @@ jobs:
         env:
           GIT_DIFF_FILES: ${{ steps.check.outputs.GIT_DIFF_FILES }}
         run: |
-          echo $GIT_DIFF_FILES
+          readarray -t files_to_check <<< "$GIT_DIFF_FILES"
 
           export CONTENT_ROOT=$(pwd)/files
-          yarn filecheck $GIT_DIFF_FILES[@]
+          yarn filecheck "${files_to_check[@]}"
