@@ -148,14 +148,10 @@ jobs:
 
           ARGS=()
           for file in "${files_to_build[@]}"; do
-            echo $file
             ARGS+=("-f" "$PWD/$file")
           done
 
-          echo ARGS:
-          echo "${ARGS[@]}"
-
-          yarn rari build --no-basic --json-issues --data-issues $ARGS
+          yarn rari build --no-basic --json-issues --data-issues "${ARGS[@]}"
           yarn yari-render-html
 
           echo "Disk usage size of the build"
