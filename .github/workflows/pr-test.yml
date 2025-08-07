@@ -148,7 +148,8 @@ jobs:
 
           ARGS=()
           for file in "${files_to_build[@]}"; do
-              ARGS+=("-f" "$PWD/$file")
+            echo $file
+            ARGS+=("-f" "$PWD/$file")
           done
 
           echo ARGS:
